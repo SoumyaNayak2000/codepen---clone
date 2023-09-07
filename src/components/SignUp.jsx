@@ -3,14 +3,63 @@ import UserAuthInput from "./auth/UserAuthInput";
 import { FaEnvelope, FaGithub } from "react-icons/fa";
 import { MdPassword } from "react-icons/md";
 import { FcGoogle } from "react-icons/fc";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { signInWithGitHub, signInWithGoogle } from "../utils/helpers";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
+import { auth } from "../config/firebase.config";
 
 const SignUp = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [getEmailValidation, setGetEmailValidation] = useState(false);
   const [isLogin, setIsLogin] = useState(false);
+
+  const [alert, setAlert] = useState(false)
+  const [alertMessage, setAlertMessage] = useState("")
+
+  const createUser = async () => {
+    if (getEmailValidation) {
+      await createUserWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          if (userCredential) {
+            console.log(userCredential);
+          }
+        })
+        .catch((err) => console.log(err));
+    }
+  };
+
+  const loginWithEmailPass = async () => {
+    if (getEmailValidation) {
+      await signInWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          if (userCredential) {
+            console.log(userCredential);
+          }
+        })
+        .catch((err) => {
+          console.log(err.message)
+          if(err.message.includes("user-not-found")){
+            setAlert(true)
+            setAlertMessage("Invalid Id: User not found")
+          }else if(err.message.includes("wrong-password")){
+            setAlert(true)
+            setAlertMessage("Invalid Password!")
+          }else{
+            setAlert(true)
+            setAlertMessage("Temporary disabled due to many faild attempts !")
+          }
+
+          setInterval(() => {
+            setAlert(false)
+          }, 4000);
+        });
+    }
+  };
+
   return (
     <div className="w-full py-6">
       <img
@@ -41,9 +90,25 @@ const SignUp = () => {
           />
           {/* alert section */}
 
+          <AnimatePresence>
+            {alert && (
+              <motion.p
+              key={"Alertmessage"}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="text-red-500"
+              >
+                {alertMessage}
+              </motion.p>
+            )
+            }
+          </AnimatePresence>
+
           {/* login button */}
           {!isLogin ? (
             <motion.div
+              onClick={createUser}
               whileTap={{ scale: 0.9 }}
               className="flex items-center justify-center w-full py-3 rounded-xl  hover:bg-emerald-400 cursor-pointer bg-emerald-500"
             >
@@ -51,6 +116,7 @@ const SignUp = () => {
             </motion.div>
           ) : (
             <motion.div
+              onClick={loginWithEmailPass}
               whileTap={{ scale: 0.9 }}
               className="flex items-center justify-center w-full py-3 rounded-xl  hover:bg-emerald-400 cursor-pointer bg-emerald-500"
             >
@@ -108,7 +174,7 @@ const SignUp = () => {
           </div>
           {/* signin with github */}
           <motion.div
-          onClick={signInWithGitHub}
+            onClick={signInWithGitHub}
             className="flex items-center justify-center gap-3 bg-[rgba(256,256,256,0.2)] backdrop-blur-md w-full py-3 rounded-xl hover:bg-[rgba(256,256,256,0.4)] cursor-pointer"
             whileTap={{ scale: 0.9 }}
           >
