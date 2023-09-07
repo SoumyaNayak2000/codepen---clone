@@ -6,10 +6,13 @@ import { motion } from "framer-motion";
 import { Link, Route, Routes } from "react-router-dom";
 import Project from "./Project";
 import SignUp from "./SignUp";
+import { useSelector } from "react-redux";
+import UserProfileDetails from "./UserProfileDetails";
 
 const Home = () => {
   const [sideMenu, SetSideMenu] = useState(false);
-  const [user, setUser] = useState(null);
+  // const [user, setUser] = useState(null);
+  const user = useSelector(state=>state.user?.user)
 
   return (
     <>
@@ -77,7 +80,7 @@ const Home = () => {
 
           {
             user && (
-              <div></div>
+              <UserProfileDetails/>
             )
           }
         </div>
