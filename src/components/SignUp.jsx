@@ -11,6 +11,8 @@ import {
 } from "firebase/auth";
 import { auth } from "../config/firebase.config";
 
+import logo from "../assets/codepen-logo-png-transparent.png"
+
 const SignUp = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -63,8 +65,8 @@ const SignUp = () => {
   return (
     <div className="w-full py-6">
       <img
-        src="https://logos-download.com/wp-content/uploads/2019/07/Codepen_Logo.png"
-        className="object-contain w-32 h-auto bg-gray-300"
+        src={logo}
+        className="object-contain w-32 h-auto bg-transparent"
       />
       <div className="w-full flex flex-col items-center justify-center py-8">
         <p className="py-12 text-2xl text-primaryText ">Join With Us! 😊</p>
