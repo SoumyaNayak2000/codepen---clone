@@ -6,16 +6,22 @@ import { motion } from "framer-motion";
 import { Link, Route, Routes } from "react-router-dom";
 import Project from "./Project";
 import SignUp from "./SignUp";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import UserProfileDetails from "./UserProfileDetails";
-import logo from "../assets/codepen-logo-png-transparent.png"
-
-
+import logo from "../assets/codepen-logo-png-transparent.png";
+import { SET_SEARCH_TERM } from "../context/actions/searchActions";
 
 const Home = () => {
   const [sideMenu, SetSideMenu] = useState(false);
   // const [user, setUser] = useState(null);
-  const user = useSelector(state=>state.user?.user)
+  const user = useSelector((state) => state.user?.user);
+
+  const searchTerm = useSelector((state) =>
+    state.searchTerm?.searchTerm ? state.searchTerm?.searchTerm : ""
+  );
+  console.log(searchTerm);
+
+  const dispatch = useDispatch();
 
   return (
     <>
@@ -35,10 +41,7 @@ const Home = () => {
         <div className="overflow-hidden w-full flex flex-col gap-4">
           {/* logo */}
           <Link to={"/home"}>
-            <img
-              src={logo}
-              className="object-contain w-72 h-auto"
-            />
+            <img src={logo} className="object-contain w-72 h-auto" />
           </Link>
 
           {/* coading */}
@@ -67,31 +70,37 @@ const Home = () => {
         <div className="w-full flex items-center justify-between gap-3">
           {/* search */}
           <div className="bg-secondary w-full px-4 py-3 rounded-md flex items-center justify-center gap-3">
-            <FaSearchengin className="text-2xl text-primaryText"/>
-            <input type=" text" className="flex-1 px-4 py-1 text-xl bg-transparent outline-none border-none text-primaryText placeholder:text-gray-600" placeholder="Search here..." />
+            <FaSearchengin className="text-2xl text-primaryText" />
+            <input
+              type=" text"
+              value={searchTerm}
+              className="flex-1 px-4 py-1 text-xl bg-transparent outline-none border-none text-primaryText placeholder:text-gray-600"
+              placeholder="Search here..."
+              onChange={(e) => dispatch(SET_SEARCH_TERM(e.target.value))}
+            />
           </div>
           {/* profile section */}
-          {
-            !user && (
-              <motion.div whileTap={{scale:0.9}} className="flex items-center justify-center gap-3">
-                <Link to={"/home/auth"} className="bg-emerald-500 px-6 py-2 rounded-md text-white text-lg cursor-pointer hover:bg-emerald-700">
-                    Signup
-                </Link>
-              </motion.div>
-            )
-          }
+          {!user && (
+            <motion.div
+              whileTap={{ scale: 0.9 }}
+              className="flex items-center justify-center gap-3"
+            >
+              <Link
+                to={"/home/auth"}
+                className="bg-emerald-500 px-6 py-2 rounded-md text-white text-lg cursor-pointer hover:bg-emerald-700"
+              >
+                Signup
+              </Link>
+            </motion.div>
+          )}
 
-          {
-            user && (
-              <UserProfileDetails/>
-            )
-          }
+          {user && <UserProfileDetails />}
         </div>
         {/* bottom section */}
         <div className="w-full">
           <Routes>
-            <Route path="/*" element={<Project/>}/>
-            <Route path="/auth" element={<SignUp/>}/>
+            <Route path="/*" element={<Project />} />
+            <Route path="/auth" element={<SignUp />} />
           </Routes>
         </div>
       </div>

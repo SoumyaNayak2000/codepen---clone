@@ -2,11 +2,21 @@ import React, { useEffect, useState } from "react";
 import { Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import Home from "./components/Home";
 import { auth, db } from "./config/firebase.config";
-import { doc, setDoc } from "firebase/firestore";
+import {
+  Query,
+  QuerySnapshot,
+  collection,
+  doc,
+  onSnapshot,
+  orderBy,
+  query,
+  setDoc,
+} from "firebase/firestore";
 import Spinner from "./components/Spinner";
 import { useDispatch } from "react-redux";
 import { SET_USER } from "./context/actions/userActions";
 import NewProject from "./components/NewProject";
+import { SET_PROJECTS } from "./context/actions/projectActions";
 
 const App = () => {
   const navigate = useNavigate();
@@ -24,7 +34,7 @@ const App = () => {
           userCredential?.providerData[0]
         ).then(() => {
           //dispatch the action to store
-          dispatch(SET_USER(userCredential?.providerData[0]))
+          dispatch(SET_USER(userCredential?.providerData[0]));
           navigate("/home/projects", { replace: true });
         });
       } else {
@@ -39,6 +49,21 @@ const App = () => {
     //cleanup the listner event
     return () => unSubscribe();
   }, []);
+
+  useEffect(() => {
+    const projectQuery = query(
+      collection(db, "Projects"),
+      orderBy("id","desc")
+    );
+
+    const unSubscribe = onSnapshot(projectQuery, (querySnaps) => {
+     const projectsList = querySnaps.docs.map((doc)=> doc.data())
+     dispatch(SET_PROJECTS(projectsList))
+    });
+
+    return unSubscribe;
+  }, []);
+
   return (
     <>
       {isLoading ? (

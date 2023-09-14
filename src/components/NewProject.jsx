@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FaHtml5, FaChevronDown, FaCss3, FaJs } from "react-icons/fa";
+import { FaHtml5, FaChevronDown, FaCss3, FaJs, FaAngleDoubleRight } from "react-icons/fa";
 import SplitPane from "react-split-pane";
 import { FcSettings } from "react-icons/fc";
 import { MdCheck, MdEdit } from "react-icons/md";
@@ -8,6 +8,12 @@ import { javascript } from "@codemirror/lang-javascript";
 import { Link } from "react-router-dom";
 import logo from "../assets/codepen-logo-png-transparent.png";
 import { AnimatePresence, motion } from "framer-motion";
+import { useSelector } from "react-redux";
+
+import UserProfileDetails from "./UserProfileDetails";
+import { doc, setDoc } from "firebase/firestore";
+import { db } from "../config/firebase.config";
+import Alert from "./Alert";
 
 const NewProject = () => {
   const [html, setHtml] = useState("");
@@ -16,6 +22,10 @@ const NewProject = () => {
   const [outPut, setOutPut] = useState("");
   const [title, setTitle] = useState("Untitle");
   const [isTitle, setIsTitle] = useState("");
+  const [alert, setAlert] = useState(false)
+  
+
+  const user = useSelector((state) => state.user.user);
 
   useEffect(() => {
     updatedOutput();
@@ -35,10 +45,41 @@ const NewProject = () => {
 
     setOutPut(combinedOutput);
   };
+
+  const saveProgram = async () => {
+    const id = `${Date.now()}`;
+    const _doc = {
+      id: id,
+      title: title,
+      html: html,
+      css: css,
+      js: js,
+      outPut: outPut,
+      user: user,
+    };
+    await setDoc(doc(db, "Projects" , id), _doc)
+      .then((res) => {
+        setAlert(true)
+
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+
+      setInterval(() => {
+        setAlert(false)
+      }, 2000);
+  };
   return (
     <>
       <div className="w-screen h-screen flex flex-col items-start justify-start overflow-hidden">
+
         {/* alert */}
+        <AnimatePresence>
+          {
+            alert && <Alert status={"Success"} alertMsg={"Project saved successfully..."}/>
+          }
+        </AnimatePresence>
         {/* header section */}
 
         <header className="w-full flex items-center justify-between px-12 py-4">
@@ -105,9 +146,34 @@ const NewProject = () => {
                 </AnimatePresence>
               </div>
               {/* follow */}
-              <div className="flex items-center justify-center px-3 mt-2 gap-2"></div>
+              <div className="flex items-center justify-center px-3 mt-2 gap-2">
+                <p className="text-primaryText text-sm">
+                  {user?.displayName
+                    ? user?.displayName
+                    : `${user?.email.split("@")[0]}`}
+                </p>
+                <motion.p
+                  whileTap={{ scale: 0.9 }}
+                  className="text-[10px] bg-emerald-500 rounded-sm px-2 py-[1px] text-primary font-semibold cursor-pointer"
+                >
+                  + Follow
+                </motion.p>
+              </div>
             </div>
           </div>
+          {/* user section */}
+          {user && (
+            <div className="flex items-center justify-center gap-4">
+              <motion.button
+                onClick={saveProgram}
+                whileTap={{ scale: 0.9 }}
+                className="px-6 py-4 bg-primaryText cursor-pointer text-base text-primary font-semibold rounded-md"
+              >
+                Save
+              </motion.button>
+              <UserProfileDetails />
+            </div>
+          )}
         </header>
 
         {/* coding section */}
@@ -119,10 +185,10 @@ const NewProject = () => {
             split="horizontal"
             minSize={100}
             maxSize={-100}
-            defaultSize={"50%"}
+            defaultSize={"55%"}
           >
             {/* top coding section */}
-            <SplitPane split="vertical" minSize={500}>
+            <SplitPane split="vertical" minSize={100}>
               {/* html code  */}
               <div className="w-full h-full flex flex-col items-start justify-start">
                 <div className="w-full flex items-center justify-between">
@@ -148,7 +214,7 @@ const NewProject = () => {
                   />
                 </div>
               </div>
-              <SplitPane split="vertical" minSize={500}>
+              <SplitPane split="vertical" minSize={100}>
                 {/* css code editor */}
                 <div className="w-full h-full flex flex-col items-start justify-start">
                   <div className="w-full flex items-center justify-between">
